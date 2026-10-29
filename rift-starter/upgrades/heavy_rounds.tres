@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="Upgrade" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/stat_modifier.gd" id="1_6e65n"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade.gd" id="2_qmff6"]
+
+[sub_resource type="Resource" id="Resource_xyd2u"]
+script = ExtResource("1_6e65n")
+stat = &"shot_power"
+op = 0
+value = 1.0
+
+[resource]
+script = ExtResource("2_qmff6")
+id = &"heavy_rounds"
+display_name = "Heavy Rounds"
+description = "Each shot does double damage to portals."
+target = &"mafia"
+cost = 2
+requires = Array[StringName]([])
+requires_flags = Array[StringName]([])
+modifiers = Array[ExtResource("1_6e65n")]([SubResource("Resource_xyd2u")])
+grants_abilities = Array[StringName]([])
+sort_order = 12

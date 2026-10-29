@@ -1,0 +1,377 @@
+[gd_scene format=3 uid="uid://icjtt4iofkep"]
+
+[ext_resource type="Script" uid="uid://dcs8fsepcgkfh" path="res://scripts/world/ground.gd" id="1_ground"]
+[ext_resource type="Script" uid="uid://v13vh7fp8wv2" path="res://scripts/world/sight_platform.gd" id="2_plat"]
+[ext_resource type="Script" uid="uid://dkrkw327e48dx" path="res://scripts/world/portal.gd" id="3_portal"]
+[ext_resource type="Script" uid="uid://bdjhswtyv4mxf" path="res://scripts/world/checkpoint.gd" id="4_cp"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="5_player"]
+[ext_resource type="Script" uid="uid://n8vy28tmw8xi" path="res://scripts/ui/hud.gd" id="6_hud"]
+[ext_resource type="Resource" uid="uid://d251afcnxm8ar" path="res://profiles/fairy.tres" id="8_fairy"]
+[ext_resource type="Script" uid="uid://capwdc4821dee" path="res://scripts/party/party.gd" id="9_party"]
+[ext_resource type="Script" uid="uid://cfirpiltqn1mb" path="res://scripts/party/party_camera.gd" id="10_cam"]
+[ext_resource type="Script" uid="uid://itcuqvrkyt45" path="res://scripts/world/portal_tendril.gd" id="11_tendril"]
+[ext_resource type="Script" uid="uid://dabx3chiq0s0a" path="res://scripts/world/pix_mote.gd" id="12_mote"]
+[ext_resource type="Script" uid="uid://coavii5ao5mx3" path="res://scripts/cutscene/cutscene_trigger.gd" id="13_trigger"]
+[ext_resource type="Script" uid="uid://eqp58g8tx3ti" path="res://scripts/world/shard_pickup.gd" id="14_shard"]
+[ext_resource type="Script" uid="uid://bj8rqed1xoavr" path="res://scripts/ui/upgrade_menu.gd" id="15_menu"]
+[ext_resource type="Script" uid="uid://7makduobsydd" path="res://scripts/world/decor/jungle_backdrop.gd" id="16_backdrop"]
+[ext_resource type="Script" uid="uid://cq4qb6yqigoiw" path="res://scripts/world/decor/jungle_dressing.gd" id="17_dressing"]
+[ext_resource type="Script" uid="uid://c5a5gtweycx3j" path="res://scripts/world/decor/ocean.gd" id="18_ocean"]
+[ext_resource type="Script" uid="uid://bhi8g0dobnr7k" path="res://scripts/boss/maw_boss.gd" id="19_boss"]
+[ext_resource type="Script" uid="uid://bu7yruq4um0vc" path="res://scripts/boss/arena_gate.gd" id="20_gate"]
+
+[node name="Main" type="Node2D" unique_id=1013610779]
+
+[node name="Backdrop" type="CanvasLayer" parent="." unique_id=914012905]
+script = ExtResource("16_backdrop")
+
+[node name="PitWater" type="Node2D" parent="." unique_id=1299008941]
+script = ExtResource("18_ocean")
+surface_y = -110.0
+from_x = 1690.0
+to_x = 2060.0
+
+[node name="CrossingWater" type="Node2D" parent="." unique_id=235297110]
+script = ExtResource("18_ocean")
+surface_y = -130.0
+from_x = 3440.0
+to_x = 4160.0
+
+[node name="Level" type="Node2D" parent="." unique_id=1321890282]
+
+[node name="LeftWall" type="StaticBody2D" parent="Level" unique_id=1042889856]
+script = ExtResource("1_ground")
+points = PackedVector2Array(-680, -900, -600, -900, -600, 400, -680, 400)
+
+[node name="ChimneyPillar" type="StaticBody2D" parent="Level" unique_id=2010394134]
+script = ExtResource("1_ground")
+points = PackedVector2Array(-490, -360, -460, -360, -460, -140, -490, -140)
+
+[node name="TrainingGround" type="StaticBody2D" parent="Level" unique_id=1745366416]
+script = ExtResource("1_ground")
+points = PackedVector2Array(-600, 0, 500, 0, 700, -60, 800, -60, 860, -78, 920, -66, 1000, -96, 1400, -220, 1700, -220, 1700, 400, -600, 400)
+
+[node name="IllusionPlatform" type="StaticBody2D" parent="Level" unique_id=157167056]
+position = Vector2(1790, -228)
+script = ExtResource("2_plat")
+kind = 1
+size = Vector2(90, 20)
+
+[node name="TruePathPlatform" type="StaticBody2D" parent="Level" unique_id=1279640136]
+position = Vector2(1885, -262)
+script = ExtResource("2_plat")
+size = Vector2(110, 20)
+
+[node name="PitPortal" type="Area2D" parent="Level" unique_id=272328077]
+position = Vector2(1875, 60)
+script = ExtResource("3_portal")
+radius = 70.0
+shots_to_seal = 999
+
+[node name="FarGround" type="StaticBody2D" parent="Level" unique_id=1012827703]
+script = ExtResource("1_ground")
+points = PackedVector2Array(2050, -220, 2200, -220, 2240, -236, 2280, -228, 2330, -250, 2400, -244, 2500, -244, 2560, -268, 2620, -268, 2700, -250, 3450, -250, 3450, 400, 2050, 400)
+
+[node name="PathPortal" type="Area2D" parent="Level" unique_id=490522899]
+position = Vector2(2460, -292)
+script = ExtResource("3_portal")
+
+[node name="TendrilPortal" type="Area2D" parent="Level" unique_id=2134316574]
+position = Vector2(2640, -460)
+script = ExtResource("3_portal")
+radius = 28.0
+shots_to_seal = 5
+
+[node name="TendrilA" type="Node2D" parent="Level/TendrilPortal" unique_id=1631320062]
+script = ExtResource("11_tendril")
+angle_degrees = 60.0
+
+[node name="TendrilB" type="Node2D" parent="Level/TendrilPortal" unique_id=1108737921]
+script = ExtResource("11_tendril")
+
+[node name="TendrilC" type="Node2D" parent="Level/TendrilPortal" unique_id=1312040895]
+script = ExtResource("11_tendril")
+angle_degrees = 120.0
+
+[node name="FairyLedge" type="StaticBody2D" parent="Level" unique_id=188286812]
+script = ExtResource("1_ground")
+points = PackedVector2Array(2950, -420, 3200, -420, 3200, -385, 2950, -385)
+
+[node name="LongCrossing" type="Node2D" parent="Level" unique_id=1073119418]
+
+[node name="SolarRest" type="StaticBody2D" parent="Level/LongCrossing" unique_id=615370535]
+position = Vector2(3800, -240)
+script = ExtResource("2_plat")
+size = Vector2(140, 20)
+for_eye = &"Solar"
+
+[node name="MoteA" type="Area2D" parent="Level/LongCrossing" unique_id=915588851]
+position = Vector2(3630, -370)
+script = ExtResource("12_mote")
+
+[node name="MoteB" type="Area2D" parent="Level/LongCrossing" unique_id=962159390]
+position = Vector2(3990, -370)
+script = ExtResource("12_mote")
+
+[node name="MoteLedge" type="Area2D" parent="Level/LongCrossing" unique_id=644451755]
+position = Vector2(3060, -470)
+script = ExtResource("12_mote")
+
+[node name="FarSide" type="StaticBody2D" parent="Level/LongCrossing" unique_id=2113464666]
+script = ExtResource("1_ground")
+points = PackedVector2Array(4150, -250, 6100, -250, 6100, 400, 4150, 400)
+
+[node name="Arena" type="Node2D" parent="Level" unique_id=1177179276]
+
+[node name="Gate" type="StaticBody2D" parent="Level/Arena" unique_id=675948200]
+position = Vector2(4770, -250)
+script = ExtResource("20_gate")
+boss_path = NodePath("../TheMaw")
+
+[node name="LeftLedge" type="StaticBody2D" parent="Level/Arena" unique_id=1341901531]
+script = ExtResource("1_ground")
+points = PackedVector2Array(5020, -400, 5220, -400, 5220, -380, 5020, -380)
+flowers = false
+
+[node name="RightLedge" type="StaticBody2D" parent="Level/Arena" unique_id=1794405525]
+script = ExtResource("1_ground")
+points = PackedVector2Array(5640, -400, 5840, -400, 5840, -380, 5640, -380)
+flowers = false
+
+[node name="MoteLeft" type="Area2D" parent="Level/Arena" unique_id=517962487]
+position = Vector2(5120, -470)
+script = ExtResource("12_mote")
+
+[node name="MoteRight" type="Area2D" parent="Level/Arena" unique_id=1973116457]
+position = Vector2(5740, -470)
+script = ExtResource("12_mote")
+
+[node name="TheMaw" type="Area2D" parent="Level/Arena" unique_id=1694930590]
+position = Vector2(5430, -570)
+script = ExtResource("19_boss")
+
+[node name="RightWall" type="StaticBody2D" parent="Level" unique_id=621485268]
+script = ExtResource("1_ground")
+points = PackedVector2Array(6100, -900, 6180, -900, 6180, 400, 6100, 400)
+
+[node name="Checkpoints" type="Node2D" parent="Level" unique_id=1984622960]
+
+[node name="Start" type="Area2D" parent="Level/Checkpoints" unique_id=1106653605]
+position = Vector2(-300, 0)
+script = ExtResource("4_cp")
+
+[node name="BeforeGap" type="Area2D" parent="Level/Checkpoints" unique_id=576809831]
+position = Vector2(1550, -220)
+script = ExtResource("4_cp")
+
+[node name="AfterGap" type="Area2D" parent="Level/Checkpoints" unique_id=257627836]
+position = Vector2(2150, -220)
+script = ExtResource("4_cp")
+
+[node name="BeforeCrossing" type="Area2D" parent="Level/Checkpoints" unique_id=221209397]
+position = Vector2(3330, -250)
+script = ExtResource("4_cp")
+
+[node name="AfterCrossing" type="Area2D" parent="Level/Checkpoints" unique_id=1231608692]
+position = Vector2(4260, -250)
+script = ExtResource("4_cp")
+
+[node name="ArenaEntry" type="Area2D" parent="Level/Checkpoints" unique_id=808073034]
+position = Vector2(4860, -250)
+script = ExtResource("4_cp")
+
+[node name="Shards" type="Node2D" parent="Level" unique_id=12003091]
+
+[node name="ChimneyTop" type="Area2D" parent="Level/Shards" unique_id=1054735510]
+position = Vector2(-545, -405)
+script = ExtResource("14_shard")
+shard_id = "chimney_top"
+
+[node name="Bumps" type="Area2D" parent="Level/Shards" unique_id=866614963]
+position = Vector2(860, -170)
+script = ExtResource("14_shard")
+shard_id = "bumps"
+
+[node name="TruePath" type="Area2D" parent="Level/Shards" unique_id=1541992653]
+position = Vector2(1885, -330)
+script = ExtResource("14_shard")
+shard_id = "true_path"
+
+[node name="AfterGap" type="Area2D" parent="Level/Shards" unique_id=534295984]
+position = Vector2(2250, -320)
+script = ExtResource("14_shard")
+shard_id = "after_gap"
+
+[node name="FairyLedge" type="Area2D" parent="Level/Shards" unique_id=394510261]
+position = Vector2(3160, -465)
+script = ExtResource("14_shard")
+shard_id = "fairy_ledge"
+
+[node name="SolarRest" type="Area2D" parent="Level/Shards" unique_id=180771439]
+position = Vector2(3800, -330)
+script = ExtResource("14_shard")
+shard_id = "solar_rest"
+
+[node name="FarSide" type="Area2D" parent="Level/Shards" unique_id=1985446539]
+position = Vector2(4600, -290)
+script = ExtResource("14_shard")
+shard_id = "far_side"
+
+[node name="Cutscenes" type="Node2D" parent="Level" unique_id=360553174]
+
+[node name="Intro" type="Area2D" parent="Level/Cutscenes" unique_id=1806801698]
+position = Vector2(-300, 0)
+script = ExtResource("13_trigger")
+cutscene = "res://cutscenes/intro.cutscene"
+autoplay = true
+
+[node name="TheGap" type="Area2D" parent="Level/Cutscenes" unique_id=1134853236]
+position = Vector2(1500, -220)
+script = ExtResource("13_trigger")
+cutscene = "res://cutscenes/the_gap.cutscene"
+require_flag = &"intro_done"
+
+[node name="Tendrils" type="Area2D" parent="Level/Cutscenes" unique_id=1694009733]
+position = Vector2(2330, -250)
+script = ExtResource("13_trigger")
+cutscene = "res://cutscenes/tendrils.cutscene"
+
+[node name="CrossingEnd" type="Area2D" parent="Level/Cutscenes" unique_id=892671039]
+position = Vector2(4330, -250)
+script = ExtResource("13_trigger")
+cutscene = "res://cutscenes/crossing_end.cutscene"
+
+[node name="BossIntro" type="Area2D" parent="Level/Cutscenes" unique_id=1724812543]
+position = Vector2(5000, -250)
+script = ExtResource("13_trigger")
+cutscene = "res://cutscenes/boss_intro.cutscene"
+skip_if_flag = &"maw_defeated"
+
+[node name="Signs" type="Node2D" parent="Level" unique_id=1577011455]
+
+[node name="SignChimney" type="Label" parent="Level/Signs" unique_id=1329463077]
+offset_left = -660.0
+offset_top = -580.0
+offset_right = -300.0
+offset_bottom = -520.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "A shard waits atop the chimney.
+Wall Jump (upgrade, U) - or a lift from the Fairy."
+
+[node name="Sign1" type="Label" parent="Level/Signs" unique_id=700235907]
+offset_left = -520.0
+offset_top = -190.0
+offset_right = -120.0
+offset_bottom = -130.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "TRAINING MONTAGE
+A/D move · Space jump (hold = higher)"
+
+[node name="Sign2" type="Label" parent="Level/Signs" unique_id=306107685]
+offset_left = 60.0
+offset_top = -190.0
+offset_right = 460.0
+offset_bottom = -130.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tab swaps Mafia <-> Fairy
+Mafia's arm follows the mouse (IK)"
+
+[node name="Sign3" type="Label" parent="Level/Signs" unique_id=1249300147]
+offset_left = 620.0
+offset_top = -250.0
+offset_right = 1020.0
+offset_bottom = -190.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Stand still on the slopes and bumps:
+feet plant with IK, hips drop to reach"
+
+[node name="Sign4" type="Label" parent="Level/Signs" unique_id=1521929188]
+offset_left = 1420.0
+offset_top = -420.0
+offset_right = 1820.0
+offset_bottom = -360.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Not everything here is real.
+Press E to open your eyes (Solar / Lunar)"
+
+[node name="Sign5" type="Label" parent="Level/Signs" unique_id=2142261330]
+offset_left = 2200.0
+offset_top = -460.0
+offset_right = 2600.0
+offset_bottom = -400.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Something is off here...
+You can only fight what you can see (E, then click)"
+
+[node name="Sign6" type="Label" parent="Level/Signs" unique_id=78290059]
+offset_left = 2760.0
+offset_top = -600.0
+offset_right = 3240.0
+offset_bottom = -500.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Only the Fairy reaches this ledge (double jump)...
+...unless she carries the Mafia up: F, then hold Space"
+
+[node name="Sign7" type="Label" parent="Level/Signs" unique_id=1363021473]
+offset_left = 2440.0
+offset_top = -560.0
+offset_right = 2740.0
+offset_bottom = -500.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Grabbed? Mash jump to break free,
+or open your eyes and shoot the tendril"
+
+[node name="Sign8" type="Label" parent="Level/Signs" unique_id=801651516]
+offset_left = 3470.0
+offset_top = -560.0
+offset_right = 3990.0
+offset_bottom = -480.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "THE LONG CROSSING — too far to jump, too far for one breath of Pix.
+Carry the Mafia across and grab Pix motes on the way.
+Only a Solar eye can see where to rest (play the Mafia: E, then F)."
+
+[node name="SignArena" type="Label" parent="Level/Signs" unique_id=227615327]
+offset_left = 4420.0
+offset_top = -520.0
+offset_right = 4760.0
+offset_bottom = -460.0
+theme_override_colors/font_color = Color(1, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 15
+text = "Beyond the vines: the Maw.
+You'll need BOTH eyes - Solar and Lunar."
+
+[node name="JungleDressing" type="Node2D" parent="." unique_id=1801771759]
+script = ExtResource("17_dressing")
+
+[node name="Mafia" parent="." unique_id=543644946 instance=ExtResource("5_player")]
+position = Vector2(-300, -2)
+
+[node name="Fairy" parent="." unique_id=1244514196 instance=ExtResource("5_player")]
+position = Vector2(-360, -2)
+profile = ExtResource("8_fairy")
+
+[node name="Camera" type="Camera2D" parent="." unique_id=1308063011]
+position = Vector2(-300, -80)
+script = ExtResource("10_cam")
+
+[node name="Party" type="Node" parent="." unique_id=1819745397]
+script = ExtResource("9_party")
+first_path = NodePath("../Mafia")
+second_path = NodePath("../Fairy")
+camera_path = NodePath("../Camera")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=324670017]
+script = ExtResource("6_hud")
+
+[node name="UpgradeMenu" type="CanvasLayer" parent="." unique_id=1282699353]
+script = ExtResource("15_menu")

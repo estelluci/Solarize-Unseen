@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Upgrade" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/stat_modifier.gd" id="1_53pi3"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade.gd" id="2_7m7ry"]
+
+[sub_resource type="Resource" id="Resource_5u8rk"]
+script = ExtResource("1_53pi3")
+stat = &"pix_carry_drain"
+op = 1
+value = 0.75
+
+[sub_resource type="Resource" id="Resource_b8ut1"]
+script = ExtResource("1_53pi3")
+stat = &"pix_lift_drain"
+op = 1
+value = 0.75
+
+[resource]
+script = ExtResource("2_7m7ry")
+id = &"efficient_wings"
+display_name = "Efficient Wings"
+description = "Carrying the Mafia costs 25% less Pix."
+target = &"fairy"
+cost = 2
+requires = Array[StringName]([&"deep_pix"])
+requires_flags = Array[StringName]([])
+modifiers = Array[ExtResource("1_53pi3")]([SubResource("Resource_5u8rk"), SubResource("Resource_b8ut1")])
+grants_abilities = Array[StringName]([])
+sort_order = 21

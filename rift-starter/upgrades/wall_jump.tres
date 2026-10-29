@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Upgrade" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/stat_modifier.gd" id="1_eg67o"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade.gd" id="2_p7yvq"]
+
+[resource]
+script = ExtResource("2_p7yvq")
+id = &"wall_jump"
+display_name = "Wall Jump"
+description = "Kick off walls: jump while touching a wall in mid-air. Slide down walls slowly."
+target = &"mafia"
+cost = 2
+requires = Array[StringName]([&"sure_footing"])
+requires_flags = Array[StringName]([])
+modifiers = Array[ExtResource("1_eg67o")]([])
+grants_abilities = Array[StringName]([&"wall_jump"])
+sort_order = 11

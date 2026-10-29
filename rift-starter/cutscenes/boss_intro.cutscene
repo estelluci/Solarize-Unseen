@@ -1,0 +1,21 @@
+# BOSS INTRO — the party steps into the arena past The Long Crossing.
+# `emit maw_wake` wakes the boss (MawBoss listens for its wake_event).
+# The arena gate seals by itself once the Maw is awake.
+
+letterbox on
+camera 5420 -470 1.0
+wait 0.6
+emote fairy "?"
+say fairy "The air's folding. Something huge is pushing through."
+emit maw_wake
+wait 1.8
+say mafia "That's not a portal. That's a mouth."
+say fairy "The Maw. It feeds where our worlds touch. Its heart keeps shifting between sun and moon."
+say fairy "When it glows gold, only your Solar eye can find it. Silver-blue, only mine."
+if upgrade heavy_rounds
+	say mafia "Then we take turns looking. And I brought the heavy rounds."
+else
+	say mafia "Then we take turns looking."
+end
+camera_reset
+letterbox off

@@ -1,0 +1,18 @@
+# BOSS DEFEATED — plays when the Maw collapses (MawBoss.defeated_cutscene).
+
+letterbox on
+camera 5420 -420 1.1
+wait 0.8
+say mafia "...Is it gone?"
+say fairy "Sealed. For now. Something sent it here."
+say mafia "The Rift."
+emote fairy "!"
+say fairy "The terraces will heal. And you didn't hunt a single fairy."
+say mafia "Day's not over yet."
+give_shards 5
+set_flag slice_complete
+fade_out 1.0
+narrate "To be continued..."
+fade_in 1.0
+camera_reset
+letterbox off

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Upgrade" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/stat_modifier.gd" id="1_fwlwc"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade.gd" id="2_rcfra"]
+
+[sub_resource type="Resource" id="Resource_yihmi"]
+script = ExtResource("1_fwlwc")
+stat = &"run_speed"
+op = 0
+value = 30.0
+
+[sub_resource type="Resource" id="Resource_j3nvm"]
+script = ExtResource("1_fwlwc")
+stat = &"ground_accel"
+op = 1
+value = 1.15
+
+[resource]
+script = ExtResource("2_rcfra")
+id = &"sure_footing"
+display_name = "Sure Footing"
+description = "Years of drills pay off. Runs faster and gets up to speed quicker."
+target = &"mafia"
+cost = 1
+requires = Array[StringName]([])
+requires_flags = Array[StringName]([])
+modifiers = Array[ExtResource("1_fwlwc")]([SubResource("Resource_yihmi"), SubResource("Resource_j3nvm")])
+grants_abilities = Array[StringName]([])
+sort_order = 10

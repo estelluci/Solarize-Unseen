@@ -1,0 +1,15 @@
+# CROSSING END — on the far side of The Long Crossing, before the arena.
+
+letterbox on
+camera leader 1.8
+wait 0.3
+say mafia "We made it. Together."
+emote fairy "!"
+say fairy "Told you. The portals are the problem. Not fairies. Not you."
+say mafia "Then whoever's opening them is the one I'm after."
+say fairy "The Rift. That's what we call it."
+emote mafia "..."
+say mafia "Ground's humming. Something big is up ahead."
+give_shards 3
+camera_reset
+letterbox off

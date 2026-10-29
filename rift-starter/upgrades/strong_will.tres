@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="Upgrade" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/stat_modifier.gd" id="1_nosqg"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade.gd" id="2_fhe24"]
+
+[sub_resource type="Resource" id="Resource_8cty3"]
+script = ExtResource("1_nosqg")
+stat = &"struggle_strength"
+op = 0
+value = 1.0
+
+[resource]
+script = ExtResource("2_fhe24")
+id = &"strong_will"
+display_name = "Strong Will"
+description = "Break free of tendrils with half the struggling. Unlocked after meeting the tendril portal."
+target = &"party"
+cost = 1
+requires = Array[StringName]([])
+requires_flags = Array[StringName]([&"seen_tendrils"])
+modifiers = Array[ExtResource("1_nosqg")]([SubResource("Resource_8cty3")])
+grants_abilities = Array[StringName]([])
+sort_order = 30

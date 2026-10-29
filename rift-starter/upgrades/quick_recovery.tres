@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Upgrade" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/stat_modifier.gd" id="1_lcg5c"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade.gd" id="2_mvtkj"]
+
+[sub_resource type="Resource" id="Resource_hela4"]
+script = ExtResource("1_lcg5c")
+stat = &"pix_regen"
+op = 1
+value = 1.5
+
+[sub_resource type="Resource" id="Resource_lmatq"]
+script = ExtResource("1_lcg5c")
+stat = &"pix_regen_delay"
+op = 2
+value = 0.2
+
+[resource]
+script = ExtResource("2_mvtkj")
+id = &"quick_recovery"
+display_name = "Quick Recovery"
+description = "Pix refills 50% faster and starts refilling almost immediately."
+target = &"fairy"
+cost = 1
+requires = Array[StringName]([])
+requires_flags = Array[StringName]([])
+modifiers = Array[ExtResource("1_lcg5c")]([SubResource("Resource_hela4"), SubResource("Resource_lmatq")])
+grants_abilities = Array[StringName]([])
+sort_order = 23

@@ -1,0 +1,25 @@
+# INTRO — plays once when the level starts (CutsceneTrigger with autoplay).
+# Story: the Mafia was sent to the fairy realm after a fairy accused of
+# ruining the taro terraces. A portal nearly swallowed him; the Fairy saved him.
+
+letterbox on
+camera mafia 1.9
+wait 0.5
+narrate "The windward jungle. Somewhere past the taro terraces."
+say Boss "Crops rotting overnight on the terraces. The farmers say a fairy did it. Handle it."
+say mafia "Find the fairy. End the problem. Simple."
+move fairy -255 0.5
+emote fairy "!"
+face mafia fairy
+camera -280 -60 2.0
+say fairy "Simple? An hour ago a portal nearly swallowed you whole. I pulled you out, remember?"
+say mafia "I remember a bright light and a very small person yelling."
+say fairy "That was me. Yelling helpfully."
+emote mafia "..."
+say mafia "Fine. Show me these portals."
+say fairy "Not yet. Drills first. A and D to move, Space to jump. Hold it to jump higher."
+camera_reset
+set_flag intro_done
+give_shards 1
+narrate "You found a Lumen Shard. Press U any time to spend shards on upgrades."
+letterbox off

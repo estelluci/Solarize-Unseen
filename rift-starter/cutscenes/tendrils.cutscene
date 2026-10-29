@@ -1,0 +1,17 @@
+# TENDRILS — before the tendril portal. Unlocks the Strong Will upgrade by
+# setting the flag it requires (see upgrades/strong_will.tres).
+
+letterbox on
+camera 2640 -420 1.4
+say fairy "That portal is reaching for us. If it gets hold of you, it won't let go."
+say mafia "And if it does?"
+say fairy "Struggle. Mash jump. Or yell for me and I'll yell for you to shoot it."
+if upgrade heavy_rounds
+	say mafia "Heavier rounds today. It won't hold on for long."
+else
+	say mafia "Shoot the arm, not the hole. Got it."
+end
+camera_reset
+set_flag seen_tendrils
+narrate "New upgrade unlocked: Strong Will. Press U."
+letterbox off

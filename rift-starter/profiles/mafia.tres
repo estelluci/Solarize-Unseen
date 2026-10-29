@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CharacterProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/player/character_profile.gd" id="1_prof"]
+
+[resource]
+script = ExtResource("1_prof")
+id = &"mafia"
+display_name = "Mafia"
+sight_eye = &"Solar"
+run_speed = 270.0
+ground_accel = 2400.0
+ground_friction = 2800.0
+air_accel = 1300.0
+jump_velocity = 640.0
+gravity = 1900.0
+fall_gravity_multiplier = 1.5
+jump_cut_gravity_multiplier = 2.5
+max_fall_speed = 950.0
+coyote_time = 0.1
+jump_buffer_time = 0.12
+air_jumps = 0
+can_aim = true
+can_glide = false
+look = 0
+body_color = Color(0.14, 0.14, 0.17, 1)
+accent_color = Color(0.78, 0.16, 0.22, 1)
+skin_color = Color(0.93, 0.78, 0.66, 1)
+spine_skin = "mafia"

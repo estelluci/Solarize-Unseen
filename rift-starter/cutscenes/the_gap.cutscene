@@ -1,0 +1,19 @@
+# THE GAP — before the illusion platform. Shows if/else on flags and sight.
+
+camera 1790 -300 1.6
+if not flag gap_explained
+	say fairy "Stop. That ledge out there... it isn't real."
+	say mafia "It looks real."
+	say fairy "So did the rot on the terraces. Press E. Look with your other eyes."
+	set_flag gap_explained
+end
+if eye Solar
+	say fairy "There. The true path glows. Your Solar eye sees what people back home can't."
+else
+	if eye Lunar
+		say mafia "Your eye is open, not mine. I'll trust the glowing one."
+	else
+		say mafia "Fine. Eyes open, then."
+	end
+end
+camera_reset

@@ -74,9 +74,8 @@ enum Look { MAFIA, FAIRY }
 ## Overall size. 1.0 = Mafia size; the Fairy is small.
 @export_range(0.3, 1.5, 0.05) var body_scale := 1.0
 @export var look: Look = Look.MAFIA
-@export var body_color := Color(0.149, 0.149, 0.18, 1.0)
+@export var body_color := Color(0.15, 0.15, 0.18)
 @export var accent_color := Color(0.75, 0.15, 0.2)
-@export var accent_color2 := Color(0.75, 0.15, 0.2)
 @export var skin_color := Color(0.93, 0.78, 0.66)
 ## Skin name to use when this character is drawn by a SpineRig.
 @export var spine_skin := ""

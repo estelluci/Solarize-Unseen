@@ -82,6 +82,7 @@ func _ready() -> void:
 	Upgrades.changed.connect(refresh_profile)
 	tracer.visible = false
 	tracer.top_level = true  # tracer points are in world space
+	apply_art()
 
 
 ## Size, collision, rig look and Pix meter all come from the profile.
@@ -101,6 +102,17 @@ func _apply_profile() -> void:
 		var meter := PixMeter.new()
 		meter.name = "PixMeter"
 		add_child(meter)
+
+
+## Drop-in art for the gunshot trail (art/slots/shot_tracer.png).
+func apply_art() -> void:
+	add_to_group("art_listeners")
+	var tex := Art.texture(&"shot_tracer")
+	tracer.texture = tex
+	tracer.texture_mode = Line2D.LINE_TEXTURE_TILE if tex else Line2D.LINE_TEXTURE_NONE
+	tracer.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	tracer.default_color = Color.WHITE if tex else Color(1, 0.9, 0.55, 1)
+	tracer.width = 6.0 if tex else 3.0
 
 
 ## Re-apply upgrades (called whenever an upgrade is bought or granted).

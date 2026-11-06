@@ -17,6 +17,8 @@ var _root: Control
 var _title: Label
 var _columns: HBoxContainer
 var _detail: Label
+var _menu_panel: PanelContainer
+var _flat_panel: StyleBox
 
 
 func _ready() -> void:
@@ -24,6 +26,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build()
 	_root.visible = false
+	add_to_group("art_listeners")
+	apply_art()
 	Upgrades.changed.connect(_refresh_if_open)
 	GameState.changed.connect(_refresh_if_open)
 
@@ -63,6 +67,27 @@ func close() -> void:
 	closed.emit()
 
 
+## Drop-in art: ui_menu_panel, ui_button, ui_button_hover, ui_button_disabled.
+func apply_art() -> void:
+	var box := Art.stylebox(&"ui_menu_panel", 24)
+	_menu_panel.add_theme_stylebox_override("panel", box if box else _flat_panel)
+	_refresh_if_open()
+
+
+func _style_button(b: Button) -> void:
+	var normal := Art.stylebox(&"ui_button")
+	var hover := Art.stylebox(&"ui_button_hover")
+	var disabled := Art.stylebox(&"ui_button_disabled")
+	if normal:
+		b.add_theme_stylebox_override("normal", normal)
+		b.add_theme_stylebox_override("pressed", hover if hover else normal)
+	if hover:
+		b.add_theme_stylebox_override("hover", hover)
+		b.add_theme_stylebox_override("focus", hover)
+	if disabled:
+		b.add_theme_stylebox_override("disabled", disabled)
+
+
 func _refresh_if_open() -> void:
 	if is_open:
 		_refresh()
@@ -86,6 +111,8 @@ func _build() -> void:
 	style.set_corner_radius_all(10)
 	style.set_content_margin_all(18)
 	panel.add_theme_stylebox_override("panel", style)
+	_menu_panel = panel
+	_flat_panel = style
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.custom_minimum_size = Vector2(1080, 560)
 	panel.position = Vector2(-540, -280)
@@ -150,6 +177,7 @@ func _make_button(u: Upgrade) -> Button:
 	b.text = "%s%s\n    %s" % [mark, u.display_name, st[1]]
 	b.disabled = st[0] != Upgrades.State.AVAILABLE
 	b.tooltip_text = u.description
+	_style_button(b)
 	b.focus_entered.connect(_show_detail.bind(u))
 	b.mouse_entered.connect(_show_detail.bind(u))
 	b.pressed.connect(func():

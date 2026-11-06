@@ -59,9 +59,13 @@ func _draw() -> void:
 	# A faint shimmer even without sight, so observant players get a hint.
 	var alpha := 1.0 if seen else 0.05
 	var hurt := 1.0 - float(_hp) / float(maxi(shots_to_seal, 1))
-	for ring in 4:
-		var r := radius * (1.0 - ring * 0.22)
-		var start := _time * (2.0 + ring) * (1.0 if ring % 2 == 0 else -1.0)
-		var col := Color(0.55 + hurt * 0.4, 0.2, 0.85 - ring * 0.1, alpha * (0.9 - ring * 0.15))
-		draw_arc(Vector2.ZERO, r, start, start + TAU * 0.7, 24, col, 3.0)
-	draw_circle(Vector2.ZERO, radius * 0.18, Color(0.05, 0.0, 0.1, alpha))
+	# Drop-in art (art/slots/portal_swirl.png) spins, fades and reddens the same way.
+	var tint := Color(1.0, 1.0 - hurt * 0.5, 1.0 - hurt * 0.5, alpha)
+	if not Art.draw_point(self, &"portal_swirl", Vector2.ZERO, radius * 2.0, _time * 2.0, tint):
+		for ring in 4:
+			var r := radius * (1.0 - ring * 0.22)
+			var start := _time * (2.0 + ring) * (1.0 if ring % 2 == 0 else -1.0)
+			var col := Color(0.55 + hurt * 0.4, 0.2, 0.85 - ring * 0.1, alpha * (0.9 - ring * 0.15))
+			draw_arc(Vector2.ZERO, r, start, start + TAU * 0.7, 24, col, 3.0)
+	if not Art.draw_point(self, &"portal_core", Vector2.ZERO, radius * 0.36, 0.0, Color(1, 1, 1, alpha)):
+		draw_circle(Vector2.ZERO, radius * 0.18, Color(0.05, 0.0, 0.1, alpha))

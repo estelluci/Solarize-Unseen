@@ -10,6 +10,7 @@ A starter Godot 4 project for Amy's concept. It includes:
 - a modular **upgrade tree**
 - a short test level set in a sunset **jungle island** that plays like the "training montage"
 - a **giant portal boss**, The Maw, at the end of the level
+- **drop-in art slots** for every visual, including the UI: save a PNG with the right name and it replaces the placeholder, keeping all its animation
 
 The project **runs as soon as you open it**. It uses a procedural placeholder character, so gameplay work can start before any Spine art exists. When the Spine rig is ready, swap in `SpineRig`. No gameplay code has to change.
 
@@ -299,6 +300,47 @@ Both protagonists are always in the level together, which fits the story: they'r
 6. **The Long Crossing.** A 700 px chasm, too wide to jump. See below.
 7. **The Maw's arena.** A sealed jungle clearing with two ledges, two Pix motes and the boss.
 
+## Replacing the art (drop-in slots)
+
+![Every slot's guide template shown in place (F3)](docs/art_templates.png)
+
+Every visual in the game has a named **slot**: each body part of both characters, the Mafia's gun, the Fairy's wings, portals and tendrils, every layer of the Maw, pickups, ground, platforms, water, plants, the backdrop, effects, and the UI. There are 69 in all. Until someone draws one, the game keeps drawing its procedural placeholder.
+
+**To replace one:**
+
+1. Find the slot in **`art/SLOTS.md`**. It lists what to paint, the in-game size, the pivot and which animation it keeps.
+2. Copy its guide template from `art/templates/<slot>.png` and paint over it. The red cross is the pivot (where the image attaches) and the arrow is the direction it should face.
+3. Save the result as **`art/slots/<slot>.png`**. WebP, JPG and SVG also work.
+
+That's all. No scenes, nodes or code need to change.
+
+![Test art dropped into a few slots](docs/art_dropin.png)
+
+**Animations are kept** because the code that animates things didn't change. Only the final "draw a shape here" step looks for art first. The IK still moves the arm bones, so a painted forearm swings and aims. The swirl still spins, plants still sway, the Maw still grows in, tracks you with its eye and cracks, and meters still shrink. Tints keep working too: the boss bar turns gold or blue, and back limbs are shaded.
+
+**In the game:**
+
+- **F3** shows every guide template in place, so you can see each slot's size and position before painting.
+- **F4** reloads art while the game is running. Save a PNG, press F4 and see it.
+
+**If something doesn't line up,** open `art/art_tweaks.tres` in the Inspector and add an entry for that slot. You can change its size, nudge it, rotate it, flip it, move its pivot, tint it, or set the nine-slice margin for UI art. Delete a file from `art/slots/` to get the placeholder back.
+
+**Art kinds** (the "kind" decides how a picture is placed):
+
+| Kind | Used for | How it's placed |
+|---|---|---|
+| point | heads, pickups, plants, the Maw's layers | scaled to the slot's height (or width), placed at the pivot, rotated and mirrored |
+| bone | arms, legs, torso, tendril segments | painted pointing **down**; top = first joint, stretched to the bone's length |
+| rect | meters, the boss bar | stretched to a box (fills are cropped to the amount left) |
+| tile | ground, water | repeats inside the shape, so edges must match |
+| strip | grass edge, water surface | repeats along an edge, following slopes |
+| layer | backdrop mountains and treelines | screen height, repeats sideways, keeps the parallax |
+| nine | dialogue box, menu, buttons | corners stay sharp, the middle stretches |
+
+**This is separate from Spine.** Drop-in slots are the quick path: artists can replace everything today with flat images. When a full Spine skeleton is ready, `SpineRig` replaces the character slots (see *Swapping in Spine*). The world and UI slots keep working either way.
+
+**Rebuilding the templates:** if you add a slot in `scripts/art/art.gd`, open `tools/build_art_templates.tscn` and press F6. It redraws `art/templates/` and `art/SLOTS.md`.
+
 ## Project layout
 
 ```
@@ -340,9 +382,16 @@ scripts/
   upgrades/ (scripts)     upgrade.gd, stat_modifier.gd
   cutscene/               parser, commands, dialogue UI, triggers
   ui/upgrade_menu.gd      pause menu for buying upgrades
+  art/art.gd              art slot registry, loading, and draw helpers
+  art/art_tweak.gd        one slot's fix-ups (Resource)
 cutscenes/                .cutscene story files + WRITING_CUTSCENES.md
 upgrades/                 one .tres per upgrade
 tools/build_upgrades.gd   rebuilds the starter upgrade files
+tools/build_art_templates.tscn  rebuilds art/templates/ and art/SLOTS.md (press F6)
+art/SLOTS.md              every art slot: what to paint, size, pivot
+art/slots/                drop your art here (<slot>.png)
+art/templates/            guide template for every slot
+art/art_tweaks.tres       per-slot size / nudge / rotation / flip fixes
   world/checkpoint.gd     respawn points
   ui/hud.gd               sight tint + status text
 profiles/
@@ -417,7 +466,7 @@ godot --headless --import
 godot --headless res://tests/smoke_test.tscn
 ```
 
-The test checks 166 things, including:
+The test checks 179 things, including:
 
 - the IK math (knee and elbow bend direction, reach clamping, FABRIK reaching, keeping its bone lengths, and respecting joint limits)
 - input bindings
@@ -467,6 +516,13 @@ The test checks 166 things, including:
   - phase 3 core flips and the inhale pull
   - defeat: flag, gate opens, camera returns, tendrils gone, reward cutscene
   - staying dead after loading
+- **art slots:**
+  - every slot has a template and a line in SLOTS.md
+  - no art ships by default, so the placeholders show
+  - the F3 preview fills every slot
+  - UI art becomes nine-slice boxes
+  - a dropped-in image is drawn, and removing it brings the placeholder back
+  - character art leaves the IK pose untouched
 - player 2 dropping in, moving on their own, being pulled back when too far, the camera framing both, and handing back to the AI
 
 All of them currently pass.
@@ -474,8 +530,9 @@ All of them currently pass.
 ## Suggested next steps
 
 1. Write the real story into `cutscenes/` with character names and the Rift reveal. The writer's guide covers everything.
-2. Portraits in dialogue: add a `portrait` command in `cutscene_commands.gd` and a TextureRect in `cutscene_ui.gd`.
-3. A state machine for the player as more moves arrive (grapple, dash). They can be gated as upgrade abilities, the same way Wall Jump is.
-4. Boss polish: hit sounds, screen shake on phase changes, and a short roar cutscene between phases (call `Cutscenes.play_file` from the `phase_changed` signal).
-5. More puzzles built around carry distance, Solar/Lunar-only paths and the chimney. The Long Crossing is the template.
-6. Swap the procedural art for painted layers and TileMapLayers once the art team is ready. Each decor script is one self-contained `_draw`.
+2. Paint the first art: start with the Mafia's and Fairy's heads and torsos, then the portal swirl, using the templates in `art/templates/`.
+3. Portraits in dialogue: add a `portrait` command in `cutscene_commands.gd` and a TextureRect in `cutscene_ui.gd`.
+4. A state machine for the player as more moves arrive (grapple, dash). They can be gated as upgrade abilities, the same way Wall Jump is.
+5. Boss polish: hit sounds, screen shake on phase changes, and a short roar cutscene between phases (call `Cutscenes.play_file` from the `phase_changed` signal).
+6. More puzzles built around carry distance, Solar/Lunar-only paths and the chimney. The Long Crossing is the template.
+7. Once the art team outgrows flat drop-ins, move levels to TileMapLayers and the characters to Spine.

@@ -403,6 +403,7 @@ func _draw() -> void:
 	var seen := Sight.active
 	# Even unsighted eyes glimpse something this big - but faintly.
 	var a := 1.0 if seen else 0.45
+	var faint := Color(1, 1, 1, a)
 	var r := radius * s
 	# Beams (drawn in world space under the boss).
 	for b in _beams:
@@ -410,27 +411,33 @@ func _draw() -> void:
 		var bottom := floor_y - global_position.y
 		if b.t < beam_telegraph:
 			var blink := 0.35 + 0.35 * absf(sin(b.t * 18.0))
-			draw_line(Vector2(lx, r * 0.6), Vector2(lx, bottom), Color(1.0, 0.3, 0.6, blink), 2.0)
-			draw_circle(Vector2(lx, bottom - 4), 10.0 + b.t * 10.0, Color(1.0, 0.3, 0.6, blink * 0.5))
+			if not Art.draw_rect(self, &"maw_beam_warning", Rect2(lx - 4.0, r * 0.6, 8.0, bottom - r * 0.6), Color(1, 1, 1, blink * 1.4)):
+				draw_line(Vector2(lx, r * 0.6), Vector2(lx, bottom), Color(1.0, 0.3, 0.6, blink), 2.0)
+				draw_circle(Vector2(lx, bottom - 4), 10.0 + b.t * 10.0, Color(1.0, 0.3, 0.6, blink * 0.5))
 		else:
-			draw_rect(Rect2(lx - beam_half_width, r * 0.5, beam_half_width * 2.0, bottom - r * 0.5), Color(0.85, 0.35, 1.0, 0.55))
-			draw_rect(Rect2(lx - beam_half_width * 0.35, r * 0.5, beam_half_width * 0.7, bottom - r * 0.5), Color(1, 0.9, 1, 0.9))
+			var column := Rect2(lx - beam_half_width, r * 0.5, beam_half_width * 2.0, bottom - r * 0.5)
+			if not Art.draw_rect(self, &"maw_beam", column):
+				draw_rect(column, Color(0.85, 0.35, 1.0, 0.55))
+				draw_rect(Rect2(lx - beam_half_width * 0.35, r * 0.5, beam_half_width * 0.7, bottom - r * 0.5), Color(1, 0.9, 1, 0.9))
 	# Outer swirl.
-	for ring in 6:
-		var rr := r * (1.0 - ring * 0.12)
-		var spin := _time * (0.6 + ring * 0.35) * (1.0 if ring % 2 == 0 else -1.0)
-		var col := Color(0.55 + ring * 0.06, 0.15, 0.75 - ring * 0.05, a * (0.9 - ring * 0.08))
-		draw_arc(Vector2.ZERO, rr, spin, spin + TAU * 0.78, 48, col, 7.0 - ring * 0.6)
+	if not Art.draw_point(self, &"maw_swirl", Vector2.ZERO, r * 2.0, _time * 0.6, faint):
+		for ring in 6:
+			var rr := r * (1.0 - ring * 0.12)
+			var spin := _time * (0.6 + ring * 0.35) * (1.0 if ring % 2 == 0 else -1.0)
+			var col := Color(0.55 + ring * 0.06, 0.15, 0.75 - ring * 0.05, a * (0.9 - ring * 0.08))
+			draw_arc(Vector2.ZERO, rr, spin, spin + TAU * 0.78, 48, col, 7.0 - ring * 0.6)
 	# The maw: dark mouth ringed with teeth.
 	var mouth := r * 0.5
-	draw_circle(Vector2.ZERO, mouth, Color(0.04, 0.0, 0.08, a))
-	var teeth := 14
-	for i in teeth:
-		var ang := TAU * i / teeth + sin(_time * 0.7) * 0.1
-		var base_a := Vector2.RIGHT.rotated(ang - 0.18) * mouth
-		var base_b := Vector2.RIGHT.rotated(ang + 0.18) * mouth
-		var tip := Vector2.RIGHT.rotated(ang) * mouth * (0.7 - 0.08 * sin(_time * 3.0 + i))
-		draw_colored_polygon(PackedVector2Array([base_a, tip, base_b]), Color(0.92, 0.85, 0.95, a))
+	if not Art.draw_point(self, &"maw_mouth", Vector2.ZERO, mouth * 2.0, 0.0, faint):
+		draw_circle(Vector2.ZERO, mouth, Color(0.04, 0.0, 0.08, a))
+	if not Art.draw_point(self, &"maw_teeth", Vector2.ZERO, mouth * 2.0, sin(_time * 0.7) * 0.1, faint):
+		var teeth := 14
+		for i in teeth:
+			var ang := TAU * i / teeth + sin(_time * 0.7) * 0.1
+			var base_a := Vector2.RIGHT.rotated(ang - 0.18) * mouth
+			var base_b := Vector2.RIGHT.rotated(ang + 0.18) * mouth
+			var tip := Vector2.RIGHT.rotated(ang) * mouth * (0.7 - 0.08 * sin(_time * 3.0 + i))
+			draw_colored_polygon(PackedVector2Array([base_a, tip, base_b]), Color(0.92, 0.85, 0.95, a))
 	# The core: Solar gold or Lunar silver-blue; dim when shielded or hidden.
 	var core_col := Color(1.0, 0.78, 0.3) if core_eye == Sight.SOLAR else Color(0.65, 0.8, 1.0)
 	var open := state == State.FIGHT and not shielded and Sight.can_see(core_eye)
@@ -439,21 +446,28 @@ func _draw() -> void:
 	if _flash > 0.0:
 		core_col = Color.WHITE
 	var look := _iris_offset() * mouth * 0.25
-	draw_circle(look, mouth * 0.42, Color(core_col, a * 0.35))
-	draw_circle(look, mouth * 0.3, Color(core_col, a))
-	draw_circle(look + look.normalized() * 4.0, mouth * 0.12, Color(0.05, 0.02, 0.08, a))
+	var core_slot := &"maw_core_solar" if core_eye == Sight.SOLAR else &"maw_core_lunar"
+	var core_tint := Color(1, 1, 1, a) if open else Color(0.45, 0.45, 0.5, a)
+	var core_size := mouth * 0.84 * (1.15 if _flash > 0.0 else 1.0)
+	if not Art.draw_point(self, core_slot, look, core_size, 0.0, core_tint):
+		draw_circle(look, mouth * 0.42, Color(core_col, a * 0.35))
+		draw_circle(look, mouth * 0.3, Color(core_col, a))
+		draw_circle(look + look.normalized() * 4.0, mouth * 0.12, Color(0.05, 0.02, 0.08, a))
 	if shielded and state == State.FIGHT:
 		var pulse := 0.5 + 0.3 * sin(_time * 6.0)
-		draw_arc(Vector2.ZERO, mouth * 0.95, 0.0, TAU, 40, Color(0.75, 0.6, 1.0, pulse * a), 4.0)
+		if not Art.draw_point(self, &"maw_shield", Vector2.ZERO, mouth * 1.9, 0.0, Color(1, 1, 1, pulse * a)):
+			draw_arc(Vector2.ZERO, mouth * 0.95, 0.0, TAU, 40, Color(0.75, 0.6, 1.0, pulse * a), 4.0)
 	if _deflect > 0.0:
 		for i in 6:
 			var d := Vector2.RIGHT.rotated(i * 1.05 + _time * 9.0)
-			draw_line(look + d * mouth * 0.3, look + d * mouth * 0.55, Color(1, 1, 1, _deflect * 3.0), 2.0)
+			if not Art.draw_point(self, &"pix_sparkle", look + d * mouth * 0.45, 8.0, 0.0, Color(1, 1, 1, _deflect * 3.0)):
+				draw_line(look + d * mouth * 0.3, look + d * mouth * 0.55, Color(1, 1, 1, _deflect * 3.0), 2.0)
 	# Cracks spread as it weakens.
 	var damage := 1.0 - float(hp) / float(max_hp)
-	for i in int(damage * 8.0):
-		var d := Vector2.RIGHT.rotated(i * 2.4 + 0.5)
-		draw_line(d * mouth * 1.05, d * r * 0.95 + d.orthogonal() * 12.0, Color(1.0, 0.6, 0.9, a * 0.8), 2.0)
+	if not Art.draw_point(self, &"maw_cracks", Vector2.ZERO, r * 2.0, 0.0, Color(1, 1, 1, a * damage)):
+		for i in int(damage * 8.0):
+			var d := Vector2.RIGHT.rotated(i * 2.4 + 0.5)
+			draw_line(d * mouth * 1.05, d * r * 0.95 + d.orthogonal() * 12.0, Color(1.0, 0.6, 0.9, a * 0.8), 2.0)
 
 
 func _iris_offset() -> Vector2:

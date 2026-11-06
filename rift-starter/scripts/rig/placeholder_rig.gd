@@ -28,6 +28,9 @@ extends CharacterRig
 @export var foot_sharpness := 30.0  ## how fast feet chase their targets
 @export var max_hip_drop := 18.0
 
+## Drop-in art for back limbs is darkened by this, for depth.
+const BACK_TINT := Color(0.62, 0.62, 0.7)
+
 @export_group("Debug")
 @export var show_ik_targets := false
 
@@ -180,36 +183,42 @@ func _draw() -> void:
 	var back_body := body.darkened(0.35)
 	var skin := profile.skin_color
 	var accent := profile.accent_color
-	var accent2 := profile.accent_color2
 	var fairy := profile.look == CharacterProfile.Look.FAIRY
 	var back := 0 if _facing > 0 else 1   # the limb further from the camera
 	var front := 1 - back
+	var face := Vector2(_facing, 1)
 
 	if fairy:
 		_draw_wings(accent)
-	# Back limbs first
-	_limb(_shoulder, _elbows[0], _hands[0], back_body, 6.0, skin.darkened(0.25))
-	_limb(_hip + Vector2((back * 2 - 1) * 3.0, 0), _knees[back], _feet[back], back_body, 7.0, Color.BLACK.lightened(0.15))
+	# Back limbs first (drop-in art is shaded darker for depth)
+	_arm(0, BACK_TINT, back_body, skin.darkened(0.25))
+	_leg(back, BACK_TINT, back_body, Color.BLACK.lightened(0.15))
 	# Torso
-	draw_line(_hip, _shoulder, body, 14.0)
-	draw_circle(_hip, 7.0, body)
-	draw_circle(_shoulder, 7.0, body)
-	if not fairy:
-		draw_line(_shoulder + Vector2(0, 2), _shoulder.lerp(_hip, 0.55), accent, 3.0)  # tie
+	if not Art.draw_bone(self, _slot("torso"), _shoulder, _hip, Color.WHITE, _facing):
+		draw_line(_hip, _shoulder, body, 14.0)
+		draw_circle(_hip, 7.0, body)
+		draw_circle(_shoulder, 7.0, body)
+		if not fairy:
+			draw_line(_shoulder + Vector2(0, 2), _shoulder.lerp(_hip, 0.55), accent, 3.0)  # tie
 	# Head
 	var head := _shoulder + Vector2(0, -head_radius - 4.0)
-	draw_circle(head, head_radius, skin)
-	draw_circle(head + Vector2(_facing * 5.0, -1.0), 1.8, Color(0.1, 0.1, 0.12))
-	if fairy:
-		_draw_fairy_hair(head, accent2)
-	else:
-		_draw_fedora(head, body)
+	if not Art.draw_point(self, _slot("head"), head, head_radius * 2.0 + 2.0, _lean, Color.WHITE, face):
+		draw_circle(head, head_radius, skin)
+		draw_circle(head + Vector2(_facing * 5.0, -1.0), 1.8, Color(0.1, 0.1, 0.12))
+	var head_top := head + Vector2(0, -head_radius + 1.0)
+	if not Art.draw_point(self, _slot("accessory"), head_top, 18.0, _lean, Color.WHITE, face):
+		if fairy:
+			_draw_fairy_hair(head, accent)
+		else:
+			_draw_fedora(head, body)
 	# Front leg + arm
-	_limb(_hip + Vector2((front * 2 - 1) * 3.0, 0), _knees[front], _feet[front], body, 7.0, Color.BLACK.lightened(0.1))
+	_leg(front, Color.WHITE, body, Color.BLACK.lightened(0.1))
 	if not fairy:
-		var tip: Vector2 = _hands[1] + _gun_dir * 20.0
-		draw_line(_hands[1], tip, Color(0.2, 0.2, 0.22), 5.0)
-	_limb(_shoulder, _elbows[1], _hands[1], body.lightened(0.08), 6.0, skin)
+		var gun_flip := Vector2(1, -1 if _gun_dir.x < 0.0 else 1)
+		if not Art.draw_point(self, &"mafia_gun", _hands[1], 22.0, _gun_dir.angle(), Color.WHITE, gun_flip):
+			var tip: Vector2 = _hands[1] + _gun_dir * 20.0
+			draw_line(_hands[1], tip, Color(0.2, 0.2, 0.22), 5.0)
+	_arm(1, Color.WHITE, body.lightened(0.08), skin)
 
 	if show_ik_targets:
 		for i in 2:
@@ -217,11 +226,37 @@ func _draw() -> void:
 			draw_circle(_knees[i], 2.0, Color.RED)
 
 
-func _limb(a: Vector2, joint: Vector2, b: Vector2, color: Color, width: float, end_color: Color) -> void:
-	draw_line(a, joint, color, width)
-	draw_line(joint, b, color, width * 0.9)
-	draw_circle(joint, width * 0.5, color)
-	draw_circle(b, width * 0.55, end_color)
+## Drop-in art slot for one of this character's parts, e.g. "mafia_thigh".
+func _slot(part: String) -> StringName:
+	return StringName("%s_%s" % [profile.id, part])
+
+
+func _arm(i: int, tint: Color, color: Color, hand_color: Color) -> void:
+	var a: Vector2 = _shoulder
+	var j: Vector2 = _elbows[i]
+	var b: Vector2 = _hands[i]
+	_segment(_slot("upper_arm"), a, j, tint, color, 6.0, true)
+	_segment(_slot("forearm"), j, b, tint, color, 6.0 * 0.9, false)
+	if not Art.draw_point(self, _slot("hand"), b, 9.0, (b - j).angle() - PI * 0.5, tint, Vector2(_facing, 1)):
+		draw_circle(b, 6.0 * 0.55, hand_color)
+
+
+func _leg(i: int, tint: Color, color: Color, foot_color: Color) -> void:
+	var a: Vector2 = _hip + Vector2((i * 2 - 1) * 3.0, 0)
+	var j: Vector2 = _knees[i]
+	var b: Vector2 = _feet[i]
+	_segment(_slot("thigh"), a, j, tint, color, 7.0, true)
+	_segment(_slot("shin"), j, b, tint, color, 7.0 * 0.9, false)
+	if not Art.draw_point(self, _slot("foot"), b, 14.0, 0.0, tint, Vector2(_facing, 1)):
+		draw_circle(b, 7.0 * 0.55, foot_color)
+
+
+## One limb bone: drop-in art if there is some, else the placeholder line.
+func _segment(slot: StringName, a: Vector2, b: Vector2, tint: Color, color: Color, width: float, joint_at_end: bool) -> void:
+	if not Art.draw_bone(self, slot, a, b, tint, _facing):
+		draw_line(a, b, color, width)
+		if joint_at_end:
+			draw_circle(b, width * 0.5, color)
 
 
 func _draw_fedora(head: Vector2, color: Color) -> void:
@@ -247,6 +282,8 @@ func _draw_wings(color: Color) -> void:
 	wing.a = 0.55
 	for side in [-1.0, 1.0]:
 		var rot: float = (-0.9 + flap) * side - _facing * 0.4
+		if Art.draw_point(self, &"fairy_wing", root, 44.0, rot, Color(1, 1, 1, 0.92), Vector2(side, 1)):
+			continue
 		var pts := PackedVector2Array()
 		for k in 12:
 			var t := TAU * k / 12.0

@@ -227,10 +227,16 @@ func _draw() -> void:
 		var col := Color(0.5 + 0.3 * t, 0.18, 0.75 - 0.2 * t, alpha)
 		if state == State.GRABBING:
 			col = col.lerp(Color(0.95, 0.3, 0.55, alpha), 0.5)
-		draw_line(to_local(_points[i]), to_local(_points[i + 1]), col, width)
-		draw_circle(to_local(_points[i + 1]), width * 0.5, col)
+		var a := to_local(_points[i])
+		var b := to_local(_points[i + 1])
+		# Drop-in art: one segment image per bone, thinning toward the tip.
+		var art_tint := Color(1, 0.8, 0.85, alpha) if state == State.GRABBING else Color(1, 1, 1, alpha)
+		if not Art.draw_bone(self, &"tendril_segment", a, b, art_tint, 1.0, lerpf(1.0, 0.3, t)):
+			draw_line(a, b, col, width)
+			draw_circle(b, width * 0.5, col)
 	# Little hooked tip
 	var tip_local := to_local(_points[n - 1])
 	var tip_dir := (_points[n - 1] - _points[n - 2]).normalized()
-	draw_line(tip_local, tip_local + tip_dir.rotated(1.2) * 7.0, Color(0.9, 0.5, 1.0, alpha), 2.0)
-	draw_line(tip_local, tip_local + tip_dir.rotated(-1.2) * 7.0, Color(0.9, 0.5, 1.0, alpha), 2.0)
+	if not Art.draw_point(self, &"tendril_tip", tip_local, 14.0, tip_dir.angle() - PI * 0.5, Color(1, 1, 1, alpha)):
+		draw_line(tip_local, tip_local + tip_dir.rotated(1.2) * 7.0, Color(0.9, 0.5, 1.0, alpha), 2.0)
+		draw_line(tip_local, tip_local + tip_dir.rotated(-1.2) * 7.0, Color(0.9, 0.5, 1.0, alpha), 2.0)

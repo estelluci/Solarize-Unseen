@@ -16,12 +16,38 @@ var shards := 0
 var owned_upgrades: Array[StringName] = []
 
 
+func _ready() -> void:
+	Art.preload_all()   # drop-in art is ready before the first frame is drawn
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("quick_save"):
 		if save_game():
 			notice.emit("Game saved")
 	elif event.is_action_pressed("quick_load"):
 		notice.emit("Game loaded" if load_game() else "No save yet")
+	elif event.is_action_pressed("art_preview"):
+		Art.preview_templates = not Art.preview_templates
+		refresh_art()
+		notice.emit("Art templates: %s" % ("ON (F3 to hide)" if Art.preview_templates else "off"))
+	elif event.is_action_pressed("art_reload"):
+		Art.reload()
+		refresh_art()
+		notice.emit("Art reloaded")
+
+
+## Redraw everything after art changes (template preview, newly added files).
+func refresh_art() -> void:
+	Art.preload_all()
+	get_tree().call_group("art_listeners", "apply_art")
+	_redraw(get_tree().root)
+
+
+func _redraw(node: Node) -> void:
+	if node is CanvasItem:
+		node.queue_redraw()
+	for child in node.get_children():
+		_redraw(child)
 
 
 # ---------------------------------------------------------------- flags

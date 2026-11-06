@@ -71,6 +71,14 @@ func top_edges(max_slope_degrees := 50.0) -> Array:
 func _draw() -> void:
 	if points.size() < 3:
 		return
+	# Drop-in art: art/slots/ground_fill.png repeats inside the shape and
+	# art/slots/ground_top.png runs along every walkable top (following slopes).
+	if Art.draw_tiled(self, &"ground_fill", points, 128.0):
+		if style == Style.JUNGLE and not _draw_top_art():
+			_draw_grass(RandomNumberGenerator.new())
+		elif style != Style.JUNGLE:
+			_draw_top_art()
+		return
 	draw_colored_polygon(points, fill_color)
 	if style == Style.PLAIN:
 		var outline := points.duplicate()
@@ -100,6 +108,22 @@ func _draw() -> void:
 				draw_line(Vector2(a.x, y), Vector2(a.x + rng.randf_range(-3, 3), y + rng.randf_range(8, 18)), MOSS, 3.0)
 	if style != Style.JUNGLE:
 		return
+	if _draw_top_art():
+		return
+	_draw_grass(rng)
+
+
+## Top-edge art along every walkable top. False if there's no art for it.
+func _draw_top_art() -> bool:
+	if not Art.has_art(&"ground_top"):
+		return false
+	for e in top_edges():
+		Art.draw_strip(self, &"ground_top", e[0], e[1], 20.0)
+	return true
+
+
+func _draw_grass(rng: RandomNumberGenerator) -> void:
+	rng.seed = hash(points) + 1
 	# Grass on top edges.
 	for e in top_edges():
 		var a: Vector2 = e[0]

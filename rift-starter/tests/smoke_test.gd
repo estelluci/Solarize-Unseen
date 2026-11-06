@@ -447,6 +447,7 @@ func _ready() -> void:
 	await upgrade_tests()
 	await cutscene_tests()
 	await boss_tests()
+	await art_tests()
 
 	print("\n%s (%d failures)" % ["ALL PASSED" if _fails == 0 else "FAILED", _fails])
 	get_tree().quit(1 if _fails else 0)
@@ -1051,3 +1052,71 @@ func boss_damage_to(maw: MawBoss, target: int) -> void:
 		Sight.set_active(true)
 		maw.on_shot(1)
 		await frames(1)
+
+
+## Drop-in art slots: every visual has a slot, a template and a listing,
+## art files replace placeholders, and nothing about the motion changes.
+func art_tests() -> void:
+	var reg := Art.registry()
+	check(reg.size() >= 69, "art registry lists every visual slot (%d)" % reg.size())
+	var slots_md := FileAccess.get_file_as_string("res://art/SLOTS.md")
+	var missing_template := []
+	var missing_doc := []
+	var has_art_default := []
+	for slot in reg.keys():
+		if not ResourceLoader.exists("%s%s.png" % [Art.TEMPLATE_DIR, slot]):
+			missing_template.append(slot)
+		if not slots_md.contains("`%s`" % slot):
+			missing_doc.append(slot)
+		if Art.has_art(slot):
+			has_art_default.append(slot)
+	check(missing_template.is_empty(), "every slot has a guide template %s" % [missing_template])
+	check(missing_doc.is_empty(), "art/SLOTS.md documents every slot %s" % [missing_doc])
+	check(has_art_default.is_empty(), "no drop-in art ships by default, so placeholders show %s" % [has_art_default])
+	for group in ["UI", "Backdrop"]:
+		var found := false
+		for slot in reg.keys():
+			found = found or Art.spec(slot).group == group
+		check(found, "art slots cover the %s" % group)
+	# F3 preview shows templates in every slot.
+	Art.preview_templates = true
+	var preview_ok := true
+	for slot in reg.keys():
+		preview_ok = preview_ok and Art.texture(slot) != null
+	check(preview_ok, "template preview supplies an image for every slot")
+	var box := Art.stylebox(&"ui_dialogue_panel", 24)
+	check(box is StyleBoxTexture, "UI panels become nine-slice styleboxes from art")
+	Art.preview_templates = false
+	check(Art.stylebox(&"ui_dialogue_panel") == null, "UI keeps its flat style without art")
+	# A dropped-in image is used, and removing it brings the placeholder back.
+	var img := Image.create(8, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color.MAGENTA)
+	var tex := ImageTexture.create_from_image(img)
+	Art.set_override(&"shard", tex)
+	check(Art.has_art(&"shard") and Art.texture(&"shard") == tex, "drop-in art replaces the shard placeholder")
+	var probe := _ArtProbe.new()
+	add_child(probe)
+	await frames(3)
+	check(probe.drew_art and not probe.drew_missing, "draw helpers draw art when present and fall back when not")
+	probe.queue_free()
+	Art.clear_overrides()
+	check(not Art.has_art(&"shard"), "clearing art restores the placeholder")
+	# Character art doesn't change the rig: pose comes from IK either way.
+	var rig: PlaceholderRig = player.rig
+	var before: Dictionary = rig.get_debug_pose()
+	Art.preview_templates = true
+	GameState.refresh_art()
+	await get_tree().process_frame
+	var after: Dictionary = rig.get_debug_pose()
+	check(before.keys() == after.keys() and after.feet.size() == before.feet.size(), "character art keeps the IK pose and bones")
+	Art.preview_templates = false
+	GameState.refresh_art()
+	await frames(2)
+
+
+class _ArtProbe extends Node2D:
+	var drew_art := false
+	var drew_missing := true
+	func _draw() -> void:
+		drew_art = Art.draw_point(self, &"shard", Vector2.ZERO, 20.0)
+		drew_missing = Art.draw_point(self, &"pix_mote", Vector2.ZERO, 20.0)

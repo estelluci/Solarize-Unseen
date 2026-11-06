@@ -73,6 +73,8 @@ func _pop() -> void:
 
 func _draw() -> void:
 	var pulse := 1.0 + 0.15 * sin(_age * 10.0)
+	if Art.draw_point(self, &"rift_orb", Vector2.ZERO, 28.0 * pulse, _age * 6.0):
+		return
 	draw_circle(Vector2.ZERO, 20.0 * pulse, Color(0.8, 0.3, 1.0, 0.2))
 	draw_circle(Vector2.ZERO, 12.0, Color(0.55, 0.15, 0.85))
 	draw_arc(Vector2.ZERO, 9.0, _age * 6.0, _age * 6.0 + 4.0, 12, Color(1.0, 0.7, 1.0), 2.0)

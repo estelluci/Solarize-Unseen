@@ -42,9 +42,19 @@ func _c(c: Color) -> Color:
 	return c.darkened(-shade) if shade < 0.0 else c.lightened(shade)
 
 
+## Drop-in art slot for this kind of plant, e.g. "plant_palm".
+func art_slot() -> StringName:
+	return StringName("plant_" + Kind.keys()[kind].to_lower())
+
+
 func _draw() -> void:
 	var s := -1.0 if flip else 1.0
 	var sway := sin(_time * 0.9 + variation) * 0.04
+	# Drop-in art keeps the sway (tall plants) and the random mirroring.
+	var art_sway := sway * 1.5 if kind in [Kind.PALM, Kind.BANANA, Kind.BAMBOO] else 0.0
+	var shade_tint := Color.WHITE.darkened(-shade) if shade < 0.0 else Color.WHITE.lightened(shade)
+	if Art.draw_point(self, art_slot(), Vector2.ZERO, height, art_sway, shade_tint, Vector2(s, 1)):
+		return
 	match kind:
 		Kind.PALM: _palm(s, sway)
 		Kind.MONSTERA: _monstera(s)

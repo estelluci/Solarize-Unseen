@@ -54,6 +54,8 @@ func _on_sight_changed(_active: bool, _eye: StringName) -> void:
 func _draw() -> void:
 	var rect := Rect2(-size * 0.5, size)
 	if Engine.is_editor_hint():
+		var slot := &"platform_true_path" if kind == Kind.TRUE_PATH else &"platform_illusion"
+		Art.draw_rect(self, slot, rect, Color(1, 1, 1, 0.6))
 		var c := Color(1, 0.8, 0.3) if kind == Kind.TRUE_PATH else Color(0.7, 0.5, 1)
 		draw_rect(rect, Color(c, 0.25))
 		draw_rect(rect, c, false, 2.0)
@@ -63,13 +65,15 @@ func _draw() -> void:
 		Kind.TRUE_PATH:
 			if seen:
 				var glow := Color(1.0, 0.85, 0.45) if Sight.eye == Sight.SOLAR else Color(0.6, 0.75, 1.0)
-				draw_rect(rect.grow(3.0), Color(glow, 0.25 + 0.1 * sin(_time * 4.0)))
-				draw_rect(rect, Color(glow, 0.85))
+				# Drop-in art is tinted gold or blue by the eye, like the placeholder.
+				if not Art.draw_rect(self, &"platform_true_path", rect, Color.WHITE.lerp(glow, 0.5)):
+					draw_rect(rect.grow(3.0), Color(glow, 0.25 + 0.1 * sin(_time * 4.0)))
+					draw_rect(rect, Color(glow, 0.85))
 		Kind.ILLUSION:
 			if seen:
 				var a := 0.25 + 0.2 * absf(sin(_time * 11.0))
 				draw_rect(rect, Color(0.8, 0.5, 1.0, a), false, 2.0)
-			else:
+			elif not Art.draw_rect(self, &"platform_illusion", rect):
 				# Looks exactly like jungle ground: soil with a grassy top.
 				draw_rect(rect, Color(0.23, 0.15, 0.13))
 				draw_rect(rect, Color(0.42, 0.3, 0.24), false, 3.0)

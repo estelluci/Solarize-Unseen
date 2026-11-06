@@ -7,6 +7,7 @@ const BAR_HEIGHT := 70.0
 const PANEL_BG := Color(0.05, 0.1, 0.08, 0.92)
 const PANEL_EDGE := Color(1.0, 0.8, 0.45, 0.8)
 
+var _flat_style: StyleBox
 var _top: ColorRect
 var _bottom: ColorRect
 var _fade: ColorRect
@@ -35,6 +36,7 @@ func _ready() -> void:
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(12)
 	style.set_content_margin_all(16)
+	_flat_style = style
 	_panel.add_theme_stylebox_override("panel", style)
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_panel)
@@ -56,6 +58,21 @@ func _ready() -> void:
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	vbox.add_child(_hint)
 	_panel.visible = false
+	add_to_group("art_listeners")
+	apply_art()
+
+
+## Drop-in art: ui_dialogue_panel (nine-slice) and ui_letterbox (bars).
+func apply_art() -> void:
+	var box := Art.stylebox(&"ui_dialogue_panel", 24)
+	_panel.add_theme_stylebox_override("panel", box if box else _flat_style)
+	var bar_art := Art.texture(&"ui_letterbox")
+	for bar in [_top, _bottom]:
+		var pic: TextureRect = bar.get_child(0)
+		pic.texture = bar_art
+		var c: Color = bar.color
+		c.a = 0.0 if bar_art else 1.0
+		bar.color = c
 
 
 func _bar() -> ColorRect:
@@ -63,6 +80,13 @@ func _bar() -> ColorRect:
 	r.color = Color(0.02, 0.03, 0.02, 1)
 	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(r)
+	var pic := TextureRect.new()   # holds drop-in letterbox art
+	pic.set_anchors_preset(Control.PRESET_FULL_RECT)
+	pic.stretch_mode = TextureRect.STRETCH_SCALE
+	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pic.flip_v = _top != null   # the bottom bar is the top one flipped
+	r.add_child(pic)
 	return r
 
 

@@ -77,9 +77,12 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, radius * t, 0.0, TAU, 20, Color(1, 0.85, 0.5, 0.2), 1.5)
 		return
 	var bob := Vector2(0, sin(_time * 2.5) * 4.0)
-	draw_circle(bob, radius * 1.6, Color(1.0, 0.85, 0.5, 0.15))
-	draw_circle(bob, radius * 0.7, Color(1.0, 0.9, 0.6, 0.9))
-	draw_circle(bob, radius * 0.35, Color(1, 1, 0.95, 1))
+	if not Art.draw_point(self, &"pix_mote", bob, radius * 2.2):
+		draw_circle(bob, radius * 1.6, Color(1.0, 0.85, 0.5, 0.15))
+		draw_circle(bob, radius * 0.7, Color(1.0, 0.9, 0.6, 0.9))
+		draw_circle(bob, radius * 0.35, Color(1, 1, 0.95, 1))
 	for i in 3:
 		var a := _time * 1.5 + TAU * i / 3.0
-		draw_circle(bob + Vector2(cos(a), sin(a)) * radius * 1.3, 1.8, Color(1, 0.95, 0.8, 0.8))
+		var p := bob + Vector2(cos(a), sin(a)) * radius * 1.3
+		if not Art.draw_point(self, &"pix_sparkle", p, 5.0, a):
+			draw_circle(p, 1.8, Color(1, 0.95, 0.8, 0.8))

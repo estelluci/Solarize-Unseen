@@ -27,6 +27,8 @@ func _on_body_entered(body: Node) -> void:
 
 
 func _draw() -> void:
+	if Art.draw_point(self, &"checkpoint_lit" if _lit else &"checkpoint_unlit", Vector2.ZERO, 92.0):
+		return
 	# Bamboo pole with a paper lantern.
 	draw_line(Vector2.ZERO, Vector2(0, -70), Color(0.55, 0.62, 0.3), 5.0)
 	for k in 3:

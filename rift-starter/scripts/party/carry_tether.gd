@@ -26,12 +26,14 @@ func _draw() -> void:
 	var alpha := 0.35 + 0.65 * ratio
 	if ratio < 0.25:
 		alpha *= 0.5 + 0.5 * absf(sin(_time * 18.0))  # about to give out
-	var glow := Color(1.0, 0.85, 0.5, alpha * 0.35)
-	var core := Color(1.0, 0.95, 0.8, alpha)
-	draw_line(a, b, glow, 6.0)
-	draw_line(a, b, core, 2.0)
+	if not Art.draw_strip(self, &"carry_tether", a, b, 8.0, Color(1, 1, 1, alpha), -_time * 40.0):
+		var glow := Color(1.0, 0.85, 0.5, alpha * 0.35)
+		var core := Color(1.0, 0.95, 0.8, alpha)
+		draw_line(a, b, glow, 6.0)
+		draw_line(a, b, core, 2.0)
 	# Sparkles drifting down the strand.
 	for i in 4:
 		var t := fmod(_time * 0.9 + i * 0.25, 1.0)
 		var p := a.lerp(b, t) + Vector2(sin(_time * 7.0 + i) * 3.0, 0)
-		draw_circle(p, 1.8, Color(1, 1, 0.85, alpha))
+		if not Art.draw_point(self, &"pix_sparkle", p, 5.0, _time * 3.0 + i, Color(1, 1, 1, alpha)):
+			draw_circle(p, 1.8, Color(1, 1, 0.85, alpha))

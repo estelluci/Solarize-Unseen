@@ -55,13 +55,19 @@ func _draw_bar() -> void:
 		return
 	var view := get_viewport().get_visible_rect().size
 	var rect := Rect2(view.x * 0.5 - 300.0, view.y - 66.0, 600.0, 16.0)
-	_panel.draw_rect(rect.grow(3.0), Color(0.05, 0.02, 0.08, 0.85))
+	# Drop-in art: ui_boss_bar_frame (stretched) and ui_boss_bar_fill
+	# (cropped to the health left and tinted by the core, like the placeholder).
+	if not Art.draw_rect(_panel, &"ui_boss_bar_frame", rect.grow(3.0)):
+		_panel.draw_rect(rect.grow(3.0), Color(0.05, 0.02, 0.08, 0.85))
 	var col := SOLAR if boss.core_eye == Sight.SOLAR else LUNAR
 	if boss.shielded:
 		col = Color(0.55, 0.45, 0.75)
 	var hp_ratio := float(boss.hp) / float(boss.max_hp)
-	_panel.draw_rect(Rect2(rect.position, Vector2(rect.size.x * _shown_hp, rect.size.y)), Color(1, 1, 1, 0.35))
-	_panel.draw_rect(Rect2(rect.position, Vector2(rect.size.x * hp_ratio, rect.size.y)), col)
+	if Art.draw_rect(_panel, &"ui_boss_bar_fill", rect, Color(1, 1, 1, 0.35), _shown_hp):
+		Art.draw_rect(_panel, &"ui_boss_bar_fill", rect, col, hp_ratio)
+	else:
+		_panel.draw_rect(Rect2(rect.position, Vector2(rect.size.x * _shown_hp, rect.size.y)), Color(1, 1, 1, 0.35))
+		_panel.draw_rect(Rect2(rect.position, Vector2(rect.size.x * hp_ratio, rect.size.y)), col)
 	for notch in [1.0 / 3.0, 2.0 / 3.0]:
 		var x: float = rect.position.x + rect.size.x * notch
 		_panel.draw_line(Vector2(x, rect.position.y - 3), Vector2(x, rect.end.y + 3), Color(1, 1, 1, 0.7), 2.0)

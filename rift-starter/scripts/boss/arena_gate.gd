@@ -44,11 +44,15 @@ func _draw() -> void:
 	var half := size.x * 0.5
 	# Stone posts either side.
 	for x in [-half - 8.0, half + 8.0]:
-		draw_rect(Rect2(x - 7.0, -size.y, 14.0, size.y), Color(0.3, 0.26, 0.28))
-		draw_circle(Vector2(x, -size.y), 9.0, Color(0.42, 0.36, 0.38))
+		if not Art.draw_point(self, &"gate_post", Vector2(x, 0), size.y, 0.0, Color.WHITE, Vector2(signf(x), 1)):
+			draw_rect(Rect2(x - 7.0, -size.y, 14.0, size.y), Color(0.3, 0.26, 0.28))
+			draw_circle(Vector2(x, -size.y), 9.0, Color(0.42, 0.36, 0.38))
 	if not closed and not Engine.is_editor_hint():
 		return
-	# Thorny vines, glowing with rift light.
+	# Thorny vines, glowing with rift light (drop-in art sways the same way).
+	var vine_rect := Rect2(-half + sin(_time * 2.0) * 3.0, -size.y, size.x, size.y)
+	if Art.draw_rect(self, &"gate_vines", vine_rect, Color(1, 1, 1, 0.85 + 0.15 * sin(_time * 4.0))):
+		return
 	for i in 5:
 		var x := -half + size.x * (i + 0.5) / 5.0
 		var pts := PackedVector2Array()

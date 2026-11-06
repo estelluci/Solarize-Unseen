@@ -19,6 +19,8 @@ const SKY_HORIZON := Color(0.98, 0.74, 0.45)
 @export var reference_y := -150.0
 
 var _layers: Array[Node2D] = []
+var _sky: TextureRect
+var _sky_gradient: Texture2D
 
 
 func _ready() -> void:
@@ -34,6 +36,8 @@ func _ready() -> void:
 	tex.width = 4
 	tex.height = 256
 	sky.texture = tex
+	_sky = sky
+	_sky_gradient = tex
 	sky.stretch_mode = TextureRect.STRETCH_SCALE
 	sky.set_anchors_preset(Control.PRESET_FULL_RECT)
 	sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -46,6 +50,17 @@ func _ready() -> void:
 		l.horizon = horizon
 		add_child(l)
 		_layers.append(l)
+	add_to_group("art_listeners")
+	apply_art()
+
+
+## Drop-in art: art/slots/backdrop_sky.png replaces the gradient; the layers
+## (backdrop_far / _mid / _near) are checked every frame by each layer.
+func apply_art() -> void:
+	var sky_art := Art.texture(&"backdrop_sky")
+	_sky.texture = sky_art if sky_art else _sky_gradient
+	for l in _layers:
+		l.queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -72,6 +87,17 @@ class BackdropLayer extends Node2D:
 			queue_redraw()  # sea shimmer + smoke
 
 	func _draw() -> void:
+		# Drop-in art: a strip as tall as the screen, repeated sideways, keeping
+		# the same parallax speed as the placeholder layer.
+		var slot := StringName("backdrop_" + kind)
+		var tex := Art.texture(slot)
+		if tex:
+			var view_h := get_viewport_rect().size.y
+			var tile_w := view_h * tex.get_size().x / maxf(tex.get_size().y, 1.0)
+			tile_width = tile_w
+			for i in int(ceil(get_viewport_rect().size.x / tile_w)) + 2:
+				Art.draw_rect(self, slot, Rect2(i * tile_w, 0.0, tile_w, view_h))
+			return
 		for i in 3:
 			match kind:
 				"far": _far(i * tile_width)

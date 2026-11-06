@@ -55,12 +55,15 @@ func _draw() -> void:
 	if _taken and not Engine.is_editor_hint():
 		return
 	var bob := Vector2(0, sin(_time * 2.0) * 5.0)
+	var rock := sin(_time * 1.3) * 0.15
+	if Art.draw_point(self, &"shard", bob, 34.0, rock):
+		return
 	var glow := Color(0.35, 1.0, 0.85, 0.18 + 0.08 * sin(_time * 3.0))
 	draw_circle(bob, 22.0, glow)
 	# A faceted crystal: teal body, gold heart.
 	var pts := PackedVector2Array([Vector2(0, -16), Vector2(9, -2), Vector2(5, 13), Vector2(-5, 13), Vector2(-9, -2)])
 	for i in pts.size():
-		pts[i] = pts[i].rotated(sin(_time * 1.3) * 0.15) + bob
+		pts[i] = pts[i].rotated(rock) + bob
 	draw_colored_polygon(pts, Color(0.3, 0.9, 0.8))
 	draw_polyline(pts + PackedVector2Array([pts[0]]), Color(0.85, 1.0, 0.95), 1.5)
 	draw_line(pts[0], pts[3], Color(0.7, 1, 0.95, 0.6), 1.0)

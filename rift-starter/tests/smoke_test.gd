@@ -448,6 +448,7 @@ func _ready() -> void:
 	await cutscene_tests()
 	await boss_tests()
 	await art_tests()
+	level_editor_tests()
 
 	print("\n%s (%d failures)" % ["ALL PASSED" if _fails == 0 else "FAILED", _fails])
 	get_tree().quit(1 if _fails else 0)
@@ -1120,3 +1121,64 @@ class _ArtProbe extends Node2D:
 	func _draw() -> void:
 		drew_art = Art.draw_point(self, &"shard", Vector2.ZERO, 20.0)
 		drew_missing = Art.draw_point(self, &"pix_mote", Vector2.ZERO, 20.0)
+
+
+## The level editor plugin's building blocks (the editor UI itself needs a
+## window; see tests/editor_selftest.gd).
+func level_editor_tests() -> void:
+	var Pieces = load("res://addons/rift_level_editor/level_pieces.gd")
+	var Builder = load("res://addons/rift_level_editor/level_builder.gd")
+	var broken := []
+	for id in Pieces.CATALOG.keys():
+		var n: Node = Pieces.create(id, Vector2(100, -50), {"level_name": "test", "shard_ids": [], "global_at": Vector2(100, -50)})
+		if n == null or (n.get_script() == null and not n is Label and n.get_child_count() == 0):
+			broken.append(id)
+		if n:
+			n.free()
+	check(broken.is_empty(), "every palette piece (%d) builds %s" % [Pieces.CATALOG.size(), broken])
+	var tp: Node = Pieces.create("tendril_portal", Vector2.ZERO)
+	check(tp is Portal and tp.get_child_count() == 3 and tp.get_child(0) is PortalTendril, "tendril portal comes with three tendrils")
+	tp.free()
+	var arena: Node = Pieces.create("boss_arena", Vector2.ZERO, {"global_at": Vector2(5000, -250)})
+	var maw: MawBoss = arena.get_node("TheMaw")
+	var gate: ArenaGate = arena.get_node("Gate")
+	check(gate.get_node_or_null(gate.boss_path) == maw and maw.floor_y == -250.0 and maw.arena_left < 5000.0 and maw.arena_right > 5000.0,
+		"boss arena links its gate to the Maw and fits the arena around the click")
+	arena.free()
+	check(Pieces.unique_shard_id("Volcano Climb", ["volcano_climb_shard_1"]) == "volcano_climb_shard_2", "new shards get unused ids")
+	# A drawn line becomes a clockwise Ground whose walkable top is that line.
+	var line := PackedVector2Array([Vector2(300, -100), Vector2(150, -40), Vector2(0, 0)])   # drawn right to left
+	var poly: PackedVector2Array = Pieces.surface_to_polygon(line, 200.0)
+	var g := Ground.new()
+	g.points = poly
+	var tops := g.top_edges()
+	check(Pieces.signed_area(poly) > 0.0 and tops.size() == 2 and tops[0][0] == Vector2(0, 0) and poly[poly.size() - 1].y == 200.0,
+		"drawn ground fills down and keeps the drawn line as its grassy top")
+	g.free()
+	var ccw := PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(80, 50), Vector2(80, 0)])
+	check(Pieces.signed_area(Pieces.clockwise(ccw)) > 0.0, "closed shapes drawn the other way round are flipped")
+	var slab := [PackedVector2Array([Vector2(0, 0), Vector2(400, -100), Vector2(400, 300), Vector2(0, 300)])]
+	check(is_equal_approx(Pieces.ground_y_below(slab, Vector2(200, -200)), -50.0) and is_nan(Pieces.ground_y_below(slab, Vector2(600, 0))),
+		"pieces find the ground surface below the cursor")
+	check(Pieces.snap(Vector2(14, 26), 10.0) == Vector2(10, 30), "grid snapping")
+	# New-level wizard.
+	check(Builder.build({"name": " "}).has("error"), "the wizard needs a name")
+	var path: String = Builder.path_for("Smoke Test Level")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var result: Dictionary = Builder.build({"name": "Smoke Test Level", "length": 4000.0, "gap": true})
+	check(result.get("path", "") == "res://levels/smoke_test_level.tscn", "the wizard saves to res://levels/ (%s)" % [result])
+	var lvl: Node = (load(path) as PackedScene).instantiate() if result.has("path") else null
+	if lvl:
+		var start: Ground = lvl.get_node_or_null("Level/StartGround")
+		var far: Ground = lvl.get_node_or_null("Level/FarGround")
+		check(lvl.get_node_or_null("Party") is Party and lvl.get_node_or_null("Mafia") is Player and lvl.get_node_or_null("Fairy") is Player
+			and lvl.get_node("Party").first_path == NodePath("../Mafia") and lvl.get_node("Fairy").profile.id == "fairy",
+			"a new level comes with both characters and the party")
+		check(start != null and far != null and start.points[1].x < far.points[0].x and far.points[1].x == 3700.0
+			and lvl.get_node_or_null("Water") is Ocean and lvl.get_node_or_null("Level/Checkpoints/BeforeGap") is Checkpoint,
+			"the water-gap layout splits the ground over a chasm with a checkpoint")
+		check(lvl.scene_file_path == path and (load(path) as PackedScene).get_state().get_node_instance(0) == null,
+			"new levels are standalone scenes, not tied to the template")
+		lvl.free()
+	check(Builder.build({"name": "Smoke Test Level"}).has("error"), "the wizard won't overwrite an existing level")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

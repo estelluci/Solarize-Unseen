@@ -10,6 +10,7 @@ A starter Godot 4 project for Amy's concept. It includes:
 - a modular **upgrade tree**
 - a short test level set in a sunset **jungle island** that plays like the "training montage"
 - a **giant portal boss**, The Maw, at the end of the level
+- an **in-Godot level editor** (a "Level" dock: piece palette, ground drawing, drag handles, a New level wizard)
 - **drop-in art slots** for every visual, including the UI: save a PNG with the right name and it replaces the placeholder, keeping all its animation
 
 The project **runs as soon as you open it**. It uses a procedural placeholder character, so gameplay work can start before any Spine art exists. When the Spine rig is ready, swap in `SpineRig`. No gameplay code has to change.
@@ -387,6 +388,12 @@ scripts/
 cutscenes/                .cutscene story files + WRITING_CUTSCENES.md
 upgrades/                 one .tres per upgrade
 tools/build_upgrades.gd   rebuilds the starter upgrade files
+addons/rift_level_editor/ the Level dock (editor plugin)
+  plugin.gd               tools, placing, ground drawing, handles, markers
+  dock.gd                 the dock's buttons and settings
+  level_pieces.gd         the palette: every piece and how it's built
+  level_builder.gd        New level wizard (uses levels/level_template.tscn)
+levels/                   your levels; level_template.tscn = what new ones start with
 tools/build_art_templates.tscn  rebuilds art/templates/ and art/SLOTS.md (press F6)
 art/SLOTS.md              every art slot: what to paint, size, pivot
 art/slots/                drop your art here (<slot>.png)
@@ -451,12 +458,68 @@ Turn on `Rig > Debug > Show IK Targets` in the Inspector to see the foot targets
 
 Open `profiles/mafia.tres` or `profiles/fairy.tres` and change the values in the Inspector: speed, acceleration, jump height, gravity, coyote time, air jumps, glide speed and colors. Both characters share one controller, so any new character is just a new profile.
 
-## Building levels
+## Building levels: the Level editor
 
-- **Terrain:** add a `StaticBody2D`, attach `scripts/world/ground.gd`, then edit `points`. Keep slopes under 45°.
-- **Sight platforms:** attach `sight_platform.gd` and choose TRUE_PATH or ILLUSION. Set `for_eye` to `Solar` or `Lunar` to make a platform that only one character can see. That gives you swap puzzles.
-- **Portals:** attach `portal.gd` to an `Area2D`. It sets up its own collision.
-- **Checkpoints:** attach `checkpoint.gd` to an `Area2D` placed on the ground.
+![The Level dock and a level being built](docs/level_editor.png)
+
+The project includes an editor plugin, **Rift Level Editor** (`addons/rift_level_editor/`). It's switched on already. If you ever need to turn it on again, use *Project → Project Settings → Plugins*. It adds a **Level** dock next to the Inspector. Everything it does can be undone with Ctrl+Z.
+
+**Start a new level:** press **New level...** at the top of the dock. Pick a name, a length (2,000, 4,000 or 6,000 px), a ground style, and whether to start with a water gap. You get `res://levels/<name>.tscn` with both characters, the party, the camera, the backdrop, the HUD, the upgrade menu, walls at each end and a start checkpoint. It opens straight away, so you can press F6 to play it. Tick *Play this level when the game starts* to make F5 run it. To change what every new level starts with, edit `levels/level_template.tscn`.
+
+**Place pieces:** click a piece in the palette, then click in the 2D view. Keep clicking to place more. Right-click or Esc goes back to Select. Each piece goes in its own folder (`Level/Portals`, `Level/Shards`, ...), and the folder is created if it doesn't exist. Then tweak the piece in the Inspector as usual.
+
+| Group | Pieces |
+|---|---|
+| Terrain | ground block, slope, floating rock, basalt wall, water gap |
+| Sight | true-path, illusion, Solar-only and Lunar-only platforms |
+| Enemies | portal, tendril portal (comes with 3 tendrils), boss arena (the Maw + its gate + intro trigger, already linked) |
+| Pickups | Pix mote, Lumen shard (gets its own id, so it's only collected once), checkpoint |
+| Story | cutscene trigger, sign |
+| Decor | palm, banana, bamboo, monstera, fern, hibiscus |
+
+**Draw ground** (the second tool) is the fastest way to block out a level:
+
+![Drawing ground](docs/level_editor_draw.png)
+
+| Do this | To get this |
+|---|---|
+| Click along the walkable surface | add points (any direction; it's always stored left to right) |
+| Double-click, Enter or right-click | finish: the line becomes the grassy top, and the shape fills down by *Ground depth* |
+| Click the first point again | finish as a closed shape, e.g. a floating rock |
+| Backspace / Esc | remove the last point / cancel |
+
+**Drag handles** appear when you select something with the Select tool:
+
+| Selected | Handles |
+|---|---|
+| Ground | drag a white corner to move it, click a green **+** to add a corner, right-click a corner to delete it |
+| Platform, cutscene trigger, arena gate | corner handle resizes it |
+| Plant | top handle sets its height |
+| Portal, Pix mote | edge handle sets the radius |
+| Water | end handles set its edges and surface level |
+| The Maw | floor handles set the arena's left/right edges and floor height |
+
+**Markers.** Portals, motes, checkpoints, water, the Maw's arena and the two start positions only draw themselves when the game runs. The plugin outlines and labels them in the editor, and draws the **fall line** (the Player's `kill_y`): anyone who drops below it respawns.
+
+**Snapping.** *Snap to grid* (default 10 px) applies to placing, drawing and dragging. *Stand on ground* drops checkpoints, plants, triggers and the boss arena onto the surface under the cursor.
+
+**This level** (at the bottom of the dock) counts what's in the open level and flags common mistakes:
+
+- no Party (the scene can't be played)
+- no checkpoints, or a checkpoint below the fall line
+- two shards sharing an id
+- a cutscene trigger with no file
+- a Maw with no gate pointing at it
+- ground drawn the wrong way round (its grass would end up underneath)
+
+**Doing it by hand** still works. Every piece is an ordinary node with one of the project's scripts:
+
+- **Terrain:** `ground.gd` on a `StaticBody2D`. Edit `points` (clockwise) and keep slopes under 45°.
+- **Sight platforms:** `sight_platform.gd`.
+- **Portals:** `portal.gd` on an `Area2D`.
+- **Checkpoints:** `checkpoint.gd` on an `Area2D`.
+
+**Adding a piece to the palette:** add a line to `CATALOG` in `addons/rift_level_editor/level_pieces.gd` and a branch in its `create()`.
 
 ## Automated checks
 
@@ -466,7 +529,7 @@ godot --headless --import
 godot --headless res://tests/smoke_test.tscn
 ```
 
-The test checks 179 things, including:
+The test checks 193 things, including:
 
 - the IK math (knee and elbow bend direction, reach clamping, FABRIK reaching, keeping its bone lengths, and respecting joint limits)
 - input bindings
@@ -523,9 +586,18 @@ The test checks 179 things, including:
   - UI art becomes nine-slice boxes
   - a dropped-in image is drawn, and removing it brings the placeholder back
   - character art leaves the IK pose untouched
+- **the level editor:** every palette piece builds, the boss arena comes linked, drawn ground keeps its grassy top, ground-finding and snapping work, and the New level wizard makes a playable, standalone level without overwriting one
 - player 2 dropping in, moving on their own, being pulled back when too far, the camera framing both, and handing back to the AI
 
 All of them currently pass.
+
+The level editor's UI is checked inside the real Godot editor (it needs a window):
+
+```
+RIFT_EDITOR_SELFTEST=1 godot -e --path .
+```
+
+This runs `tests/editor_selftest.gd`, which covers 21 things. It places pieces, undoes and redoes, clicks in the 2D view, draws ground, drags handles and checks the level summary. It also retakes the screenshots in `docs/`. All of them pass.
 
 ## Suggested next steps
 

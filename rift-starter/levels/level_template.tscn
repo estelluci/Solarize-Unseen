@@ -1,0 +1,67 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
+[ext_resource type="Script" path="res://scripts/world/checkpoint.gd" id="2_cp"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="4_hud"]
+[ext_resource type="Resource" path="res://profiles/mafia.tres" id="5_mafia"]
+[ext_resource type="Resource" path="res://profiles/fairy.tres" id="6_fairy"]
+[ext_resource type="Script" path="res://scripts/party/party.gd" id="7_party"]
+[ext_resource type="Script" path="res://scripts/party/party_camera.gd" id="8_cam"]
+[ext_resource type="Script" path="res://scripts/ui/upgrade_menu.gd" id="9_menu"]
+[ext_resource type="Script" path="res://scripts/world/decor/jungle_backdrop.gd" id="10_backdrop"]
+[ext_resource type="Script" path="res://scripts/world/decor/jungle_dressing.gd" id="11_dressing"]
+
+[node name="NewLevel" type="Node2D"]
+
+[node name="Backdrop" type="CanvasLayer" parent="."]
+script = ExtResource("10_backdrop")
+
+[node name="Level" type="Node2D" parent="."]
+
+[node name="LeftWall" type="StaticBody2D" parent="Level"]
+script = ExtResource("1_ground")
+points = PackedVector2Array(-380, -900, -300, -900, -300, 400, -380, 400)
+style = 1
+
+[node name="StartGround" type="StaticBody2D" parent="Level"]
+script = ExtResource("1_ground")
+points = PackedVector2Array(-300, 0, 1700, 0, 1700, 400, -300, 400)
+
+[node name="RightWall" type="StaticBody2D" parent="Level"]
+script = ExtResource("1_ground")
+points = PackedVector2Array(1700, -900, 1780, -900, 1780, 400, 1700, 400)
+style = 1
+
+[node name="Checkpoints" type="Node2D" parent="Level"]
+
+[node name="Start" type="Area2D" parent="Level/Checkpoints"]
+script = ExtResource("2_cp")
+
+[node name="JungleDressing" type="Node2D" parent="."]
+script = ExtResource("11_dressing")
+keep_clear = PackedFloat32Array(0)
+
+[node name="Mafia" parent="." instance=ExtResource("3_player")]
+position = Vector2(0, -2)
+profile = ExtResource("5_mafia")
+
+[node name="Fairy" parent="." instance=ExtResource("3_player")]
+position = Vector2(-60, -2)
+profile = ExtResource("6_fairy")
+
+[node name="Camera" type="Camera2D" parent="."]
+position = Vector2(0, -80)
+script = ExtResource("8_cam")
+
+[node name="Party" type="Node" parent="."]
+script = ExtResource("7_party")
+first_path = NodePath("../Mafia")
+second_path = NodePath("../Fairy")
+camera_path = NodePath("../Camera")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")
+
+[node name="UpgradeMenu" type="CanvasLayer" parent="."]
+script = ExtResource("9_menu")
